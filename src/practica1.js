@@ -8,7 +8,13 @@ var MemoryGame = MemoryGame || {};
 /**
  * Constructora de MemoryGame
  */
-MemoryGame = function(gs) {
+MemoryGame = function(gs){
+
+	//MemoryGame(gs)
+	//initGame()
+	//draw()
+	//loop()
+	//onClick(cardId)
 
 };
 
@@ -20,6 +26,45 @@ MemoryGame = function(gs) {
  * La carta puede guardar la posición que ocupa dentro del tablero para luego poder dibujarse
  * @param {string} id Nombre del sprite que representa la carta
  */
-MemoryGameCard = function(id) {
+MemoryGameCard = function(id){
 
+	this.spriteId = id;
+	this.isFlippedUp = false;
+	this.isFound = false;
+
+	/**
+	 * Da la vuelta a la carta, cambiando el estado de la misma
+	 */
+	this.flip = function(){
+		this.isFlippedUp = true;
+	}
+
+	/**
+	 * Marca una carta como encontrada, cambiando el estado de la misma
+	 */
+	this.found = function(){
+		this.isFound = true;
+	}
+
+	/**
+	 * Compara dos cartas, devolviendo true si ambas representan la misma carta
+	 * @param {MemoryGameCard} segunda carta
+	 */
+	this.compareTo = function(otherCard){
+		return this.spriteId == otherCard.otherCard;
+	}
+
+
+
+	/**
+	 * Dibuja la carta de acuerdo al estado en el que se encuentra.
+	 * Recibe como parámetros el servidor gráfico y la posición en la que se
+	 * encuentra en el array de cartas del juego (necesario para dibujar una
+	 * carta).
+	 * @gs 
+	 * @pos 
+	 */
+	this.draw = function(gs, pos){
+		return this.spriteId == otherCard.otherCard;
+	}
 };
