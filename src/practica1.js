@@ -7,21 +7,95 @@ var MemoryGame = MemoryGame || {};
 
 /**
  * Constructora de MemoryGame
+ * Recibe como parametro el rervidor grafico, usado posteriormente para dibujar
  */
 MemoryGame = function(gs){
 
-	//MemoryGame(gs)
-	//initGame()
-	//draw()
-	//loop()
-	//onClick(cardId)
+	this.graphicServer = gs;
+	this.currentStatus = 0;
+	this.cardList = [];
+	this.cardsTmpUp = [];
+	this.cardNumber = 4;
+
+	/**
+	 * Inicializa el juego creando las cartas (2 de cada tipo de carta),
+	 * desordenándolas y comenzando el bucle de juego	 
+	 */
+	this.initGame = function(){
+		this.cardList = [new MemoryGameCard("8-ball"), new MemoryGameCard("8-ball"), new MemoryGameCard("potato"), new MemoryGameCard("potato")];
+		this.loop();
+	}
+
+	/**
+	 * Dibuja el juego:
+	 * 1- Escribe el mensaje con el estado actual del juego
+	 * 2- Pide a cada una de las cartas del tablero que se dibujen 
+	 */
+	this.draw = function(){
+		this.graphicServer.drawMessage(this.currentStatus);
+		for (var i = 0; i < this.cardNumber; i++)
+			    this.cardList[i].draw(this.graphicServer, i);
+	}
+
+	/**
+	 * El bucle del juego. Lanza el metodo draw cada 16ms (60fps) 
+	 */
+	this.loop = function(){ //con setInterval
+		var self = this; 
+		setInterval(function(){self.draw()}, 16);
+	}
+
+	/**
+	 * se llama cada vez que el jugador pulsa sobre alguna de las cartas
+	 * (identificada por el numero que ocupa en el array de cartas del juego)
+	 * Es el responsable de voltear la carta, y si hay dos volteadas, comprobar si son la misma
+	 * Si es asi, las marcara como encontradas. Si no, las pone boca abajo
+	 */
+	this.onClick = function(cardId){
+		if(this.currentStatus == 0){			//0 cards up
+			if(!this.cardList[cardId].ifFound && !this.cardList[cardId].isFlippedUp){
+				this.cardList[cardId].flip();
+				this.cardsTmpUp.push(cardId);
+
+				this.currentStatus = 1;
+			}
+		}
+		else if(this.currentStatus == 1){	//1 card up
+			if(!this.cardList[cardId].ifFound && !this.cardList[cardId].isFlippedUp){
+				this.cardList[cardId].flip();
+
+				if(this.cardList[cardId].compareTo(this.cardList[this.cardsTmpUp[0]])){
+					this.cardList[cardId].found();
+					this.cardList[this.cardsTmpUp[0]].found();
+					this.cardsTmpUp = [];
+					this.currentStatus = 0;
+				}
+				else{
+					this.cardsTmpUp.push(cardId);
+					this.currentStatus = 2;
+					setTimeout(flipBack,3000, this.cardList[this.cardsTmpUp[0]], this.cardList[this.cardsTmpUp[1]], this.cardsTmpUp, this.currentStatus);
+				}
+			}
+		}
+		else if(this.currentStatus == 2){		//2 different cards up (to skip mem timer)
+			
+		}
+	}
+
+	this.flipBack(card0, card1, list, currentStat){
+		carta0.flip();
+		carta1.flip();
+		list = [];
+		currentStat = 0;
+	}
 
 };
 
 
 
 /**
- * Constructora de las cartas del juego. Recibe como parámetro el nombre del sprite que representa la carta.
+ * Constructora de las cartas del juego. 
+ * Recibe como parámetro el nombre del sprite que representa la carta.
  * Dos cartas serán iguales si tienen el mismo sprite.
  * La carta puede guardar la posición que ocupa dentro del tablero para luego poder dibujarse
  * @param {string} id Nombre del sprite que representa la carta
@@ -36,7 +110,7 @@ MemoryGameCard = function(id){
 	 * Da la vuelta a la carta, cambiando el estado de la misma
 	 */
 	this.flip = function(){
-		this.isFlippedUp = true;
+		this.isFlippedUp = !this.isFlippedUp;
 	}
 
 	/**
@@ -51,10 +125,8 @@ MemoryGameCard = function(id){
 	 * @param {MemoryGameCard} segunda carta
 	 */
 	this.compareTo = function(otherCard){
-		return this.spriteId == otherCard.otherCard;
+		return this.spriteId == otherCard.spriteId;
 	}
-
-
 
 	/**
 	 * Dibuja la carta de acuerdo al estado en el que se encuentra.
@@ -65,6 +137,10 @@ MemoryGameCard = function(id){
 	 * @pos 
 	 */
 	this.draw = function(gs, pos){
-		return this.spriteId == otherCard.otherCard;
+		if(!this.isFlippedUp)
+			gs.draw("back",pos);
+		else
+			gs.draw(id,pos);
 	}
 };
+
