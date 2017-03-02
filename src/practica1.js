@@ -15,14 +15,18 @@ MemoryGame = function(gs){
 	this.currentStatus = 0;
 	this.cardList = [];
 	this.cardsTmpUp = [];
-	this.cardNumber = 4;
+	this.cardNumber;
+	this.messageTittle;
+	this.cardsFoundNum = 0;
 
 	/**
 	 * Inicializa el juego creando las cartas (2 de cada tipo de carta),
 	 * desordenándolas y comenzando el bucle de juego	 
 	 */
 	this.initGame = function(){
-		this.cardList = [new MemoryGameCard("8-ball"), new MemoryGameCard("8-ball"), new MemoryGameCard("potato"), new MemoryGameCard("potato")];
+		this.messageTittle = "Memory Game";
+		this.buildDeck();
+		this.shuffleCards();
 		this.loop();
 	}
 
@@ -32,7 +36,7 @@ MemoryGame = function(gs){
 	 * 2- Pide a cada una de las cartas del tablero que se dibujen 
 	 */
 	this.draw = function(){
-		this.graphicServer.drawMessage(this.currentStatus);
+		this.graphicServer.drawMessage(this.messageTittle);
 		for (var i = 0; i < this.cardNumber; i++)
 			    this.cardList[i].draw(this.graphicServer, i);
 	}
@@ -52,43 +56,82 @@ MemoryGame = function(gs){
 	 * Si es asi, las marcara como encontradas. Si no, las pone boca abajo
 	 */
 	this.onClick = function(cardId){
-		if(this.currentStatus == 0){			//0 cards up
-			if(!this.cardList[cardId].ifFound && !this.cardList[cardId].isFlippedUp){
-				this.cardList[cardId].flip();
-				this.cardsTmpUp.push(cardId);
-
-				this.currentStatus = 1;
-			}
-		}
-		else if(this.currentStatus == 1){	//1 card up
-			if(!this.cardList[cardId].ifFound && !this.cardList[cardId].isFlippedUp){
-				this.cardList[cardId].flip();
-
-				if(this.cardList[cardId].compareTo(this.cardList[this.cardsTmpUp[0]])){
-					this.cardList[cardId].found();
-					this.cardList[this.cardsTmpUp[0]].found();
-					this.cardsTmpUp = [];
-					this.currentStatus = 0;
-				}
-				else{
+		if(cardId != null && cardId >= 0 && cardId < this.cardNumber){
+			 if(this.currentStatus == 0){			//0 cards up
+				if(!this.cardList[cardId].ifFound && !this.cardList[cardId].isFlippedUp){
+					this.cardList[cardId].flip();
 					this.cardsTmpUp.push(cardId);
-					this.currentStatus = 2;
-					setTimeout(flipBack,3000, this.cardList[this.cardsTmpUp[0]], this.cardList[this.cardsTmpUp[1]], this.cardsTmpUp, this.currentStatus);
+
+					this.currentStatus = 1;
 				}
 			}
-		}
-		else if(this.currentStatus == 2){		//2 different cards up (to skip mem timer)
-			
+			else if(this.currentStatus == 1){	//1 card up
+				if(!this.cardList[cardId].ifFound && !this.cardList[cardId].isFlippedUp){
+					this.cardList[cardId].flip();
+
+					if(this.cardList[cardId].compareTo(this.cardList[this.cardsTmpUp[0]])){
+						this.cardList[cardId].found();
+						this.cardList[this.cardsTmpUp[0]].found();
+						this.cardsTmpUp = [];
+						this.cardsFoundNum += 2;
+						if (this.cardsFoundNum < this.cardNumber)
+							this.messageTittle = "Match found!!";
+						else
+							this.messageTittle = "You Win!!";
+						this.currentStatus = 0;
+					}
+					else{
+						this.cardsTmpUp.push(cardId);
+						this.messageTittle = "Try again";
+						this.currentStatus = 2;
+						//setTimeout(this.currentStatus = this.flipBack,1000, this.cardList[this.cardsTmpUp[0]], this.cardList[this.cardsTmpUp[1]], this.cardsTmpUp);
+						setTimeout(this.flipBack,1000, this);
+					}
+				}
+			}
+			else if(this.currentStatus == 2){		//2 different cards up (to skip mem timer)
+				
+			}
 		}
 	}
 
-	this.flipBack(card0, card1, list, currentStat){
-		carta0.flip();
-		carta1.flip();
-		list = [];
-		currentStat = 0;
+	this.flipBack = function(game){
+		game.cardList[game.cardsTmpUp[0]].flip();
+		game.cardList[game.cardsTmpUp[1]].flip();
+		game.cardsTmpUp = [];
+		game.currentStatus = 0;
 	}
 
+	this.shuffleCards = function() {
+	    for (var i = this.cardNumber - 1; i > 0; i--) {
+	        var j = Math.floor(Math.random() * (i + 1));
+	        var temp = this.cardList[i];
+	        this.cardList[i] = this.cardList[j];
+	        this.cardList[j] = temp;
+	    }
+    }
+
+	this.buildDeck = function() {
+	    this.cardList = [
+	    	new MemoryGameCard("8-ball"), 
+	    	new MemoryGameCard("8-ball"), 
+	    	new MemoryGameCard("potato"), 
+	    	new MemoryGameCard("potato"),
+	    	new MemoryGameCard("dinosaur"), 
+	    	new MemoryGameCard("dinosaur"),
+	    	new MemoryGameCard("kronos"), 
+	    	new MemoryGameCard("kronos"),
+	    	new MemoryGameCard("rocket"), 
+	    	new MemoryGameCard("rocket"),
+	    	new MemoryGameCard("unicorn"), 
+	    	new MemoryGameCard("unicorn"),
+	    	new MemoryGameCard("guy"), 
+	    	new MemoryGameCard("guy"),
+	    	new MemoryGameCard("zeppelin"), 
+	    	new MemoryGameCard("zeppelin")
+		];
+		this.cardNumber = this.cardList.length;
+    }
 };
 
 
